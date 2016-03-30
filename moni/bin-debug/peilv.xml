@@ -1,0 +1,19 @@
+<?xml version=1.0 encoding=UTF-8?>
+<data>
+<caizhong name='' id='百家乐'>
+</caizhong>
+<caizhong name='' id='龙虎斗'>
+<cwanfa id='0' name='龙' peilv='1'></cwanfa>
+<cwanfa id='1' name='龙单' peilv='0.75'></cwanfa>
+<cwanfa id='2' name='龙双' peilv='1.05'></cwanfa>
+<cwanfa id='3' name='龙红' peilv='0.9'></cwanfa>
+<cwanfa id='4' name='龙黑' peilv='0.9'></cwanfa>
+<cwanfa id='5' name='和' peilv='8'></cwanfa>
+<cwanfa id='6' name='虎' peilv='1'></cwanfa>
+<cwanfa id='7' name='虎单' peilv='0.75'></cwanfa>
+<cwanfa id='8' name='虎双' peilv='1.05'></cwanfa>
+<cwanfa id='9' name='虎红' peilv='0.9'></cwanfa>
+<cwanfa id='10' name='虎黑' peilv='0.9'></cwanfa>
+<!-- <wanfa id='wanfa'>龙-1;龙单-0.75;龙双-1.05;龙红-0.9;龙黑-0.9;和:8;虎-1;虎单-0.75;虎双-1.05;虎红-0.9;虎黑-0.9</wanfa> -->
+</caizhong>
+</data>
