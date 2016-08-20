@@ -5,6 +5,12 @@
 	import com.demonsters.debugger.MonsterDebugger;
 	import com.ui.list.ItemList;
 	
+	import flash.display.MovieClip;
+	import flash.display.Sprite;
+	import flash.events.Event;
+	import flash.events.MouseEvent;
+	import flash.text.TextFormat;
+	
 	import fl.controls.Button;
 	import fl.controls.CheckBox;
 	import fl.controls.List;
@@ -12,17 +18,19 @@
 	import fl.controls.TextArea;
 	import fl.controls.TextInput;
 	
-	import flash.display.MovieClip;
-	import flash.display.Sprite;
-	import flash.events.Event;
-	import flash.events.MouseEvent;
-	import flash.text.TextFormat;
-	
 	import gailv.CountGailv;
 	
 	import puke.PukeData;
 	import puke.PukeManger;
-	
+	/*
+	 *peilvCls
+	peilv_text:存储赔率
+	touru_txt:
+	chanchu_txt:总输赢
+	winnum_txt:
+	gailv_txt:
+	other_txt:
+	*/
 	public class Test extends Sprite
 	{
 		private var c_select_cm:List;
@@ -42,8 +50,15 @@
 		private var c_select2_rb:RadioButton;
 		
 		private var c_recovery_btn:Button;
-		public function Test()
+		
+		private var content:MovieClip;
+		private var peilvcls:Class;
+		private var isLastWin:Boolean = true; 
+		public function Test(_content:MovieClip,_peilvcls:Class)
 		{
+			content = _content;
+			this.addChild(content);
+			peilvcls = _peilvcls;
 			this.addEventListener(Event.ADDED_TO_STAGE,onStage);
 			var obj:XmlToObject =  new XmlToObject("peilv.xml");
 			obj.addEventListener("XMLLOADCOMPELETE",function(e:Event){
@@ -62,22 +77,22 @@
 			textFormat.color = 0x000000;
 			
 			
-			c_select_cm = Object(this).select_cm;
-			c_shuoming_cm = Object(this).shuoming_cm;
-			c_jushu_txt = Object(this).jushu_txt;
-			c_wanfa_mc = Object(this).wanfa_mc;
-			c_strat_btn= Object(this).strat_btn;
-			c_result_txt = Object(this).result_txt;
-			c_currentjushu_txt = Object(this).currentjushu_txt;
-			c_shuying_txt = Object(this).shuying_txt;
-			c_getorlost_txt = Object(this).getorlost_txt;
-			c_shuchu_cb = Object(this).shuchu_cb;
-			c_select0_rb =Object(this).select0_rb;
-			c_select1_rb = Object(this).select1_rb;
-			c_select2_rb = Object(this).select2_rb;
-			c_recovery_btn = Object(this).recovery_btn;
+			c_select_cm = content.select_cm;
+			c_shuoming_cm = content.shuoming_cm;
+			c_jushu_txt = content.jushu_txt;
+			c_wanfa_mc = content.wanfa_mc;
+			c_strat_btn= content.strat_btn;
+			c_result_txt = content.result_txt;
+			c_currentjushu_txt = content.currentjushu_txt;
+			c_shuying_txt = content.shuying_txt;
+			c_getorlost_txt = content.getorlost_txt;
+			c_shuchu_cb = content.shuchu_cb;
+			c_select0_rb =content.select0_rb;
+			c_select1_rb = content.select1_rb;
+			c_select2_rb = content.select2_rb;
+			c_recovery_btn = content.recovery_btn;
 			
-			c_startjiner_txt = Object(this).startjiner_txt;
+			c_startjiner_txt = content.startjiner_txt;
 			
 //			c_result_txt.setStyle("disabledTextFormat",textFormat);
 			c_result_txt.setStyle("textFormat",textFormat);
@@ -110,7 +125,7 @@
 			for (var j:int = 0; j < c_wanfa_mc.numChildren; j++) 
 			{
 				var tempmc:* = c_wanfa_mc.getChildAt(j);
-				if(tempmc is PeilvCls)
+				if(tempmc is peilvcls)
 				{
 					tempmc.touru_txt.text = "";
 					tempmc.chanchu_txt.text = "";
@@ -127,7 +142,7 @@
 			c_jushu_txt.text = "100";
 			c_currentjushu_txt.text = "0";
 			c_shuying_txt.text = "0";
-			Object(this).zongjiner_txt.text = "123456";
+			content.zongjiner_txt.text = "123456";
 			c_startjiner_txt.text = "10";
 		}
 		
@@ -168,6 +183,7 @@
 			
 //			if(c_select0_rb.group.selectedData==2)
 				changeRole();
+				//如果是勾选原赔率值,那么每局投入的金额都不会变化;
 				if(c_select0_rb.group.selectedData==1) changeTouruMoney();
 			countgetorlost(temparr);
 			
@@ -175,15 +191,16 @@
 		
 		/**
 		 *333333 
-		 * 
+		 * 改变投入的金额数量
 		 */
 		private function changeTouruMoney():void
 		{
+			//遍历所有的玩法;
 			for (var j:int = 0; j < c_wanfa_mc.numChildren; j++) 
 			{
 				
 				var tempmc:* = c_wanfa_mc.getChildAt(j);
-				if(tempmc is PeilvCls)
+				if(tempmc is peilvcls)
 				{
 					if(!tempmc.selet_cb.selected)
 					{
@@ -206,24 +223,25 @@
 						}
 					}
 					
-					if(Object(this).select1_1_rb.group.selectedData==0)
+					if(content.select1_1_rb.group.selectedData==0)
 					{
 						//保证最小值,从而保证本金;相同局数,产出过小
-						if(Number(tempmc.chanchu_txt.text)<0)//如果上局输,增加投入;
+						if(Number(tempmc.chanchu_txt.text)<0)//如果产出值为负数,那么开始增加投入;
 						{
 						var a:Number = tempmc.startMoney;
 						var n:Number = qihao;
-						var q:Number = 1/Number(tempmc.peilv_text.text);
+						var q:Number = 1/Number(tempmc.peilv_text.text);//计算出需要投入的金额;
 						an = -Number(tempmc.chanchu_txt.text)*q;
 						//						an = -(Number(tempmc.chanchu_txt.text)-tempmc.maxChanchu)*q;
 						}else
 						{
 							an = tempmc.startMoney;
 						}
-					}else if(Object(this).select1_1_rb.group.selectedData==1)
+					}else if(content.select1_1_rb.group.selectedData==1)
 					{
-						//保证最大值,从而获取收入;投入最大值过大
-						if((Number(tempmc.chanchu_txt.text)-tempmc.maxChanchu)<0)//如果上局输,增加投入;
+						//保证最大值,从而获取收入;投入最大值过大;
+						//总产出值在开奖后等于最大值,说明上一局已经是输,
+						if((Number(tempmc.chanchu_txt.text)-tempmc.maxChanchu)<=0)//如果上局输,增加投入;
 						{
 							var a:Number = tempmc.startMoney;
 							var n:Number = qihao;
@@ -240,11 +258,17 @@
 					
 					tempmc.touru_txt.text = an.toString();
 					//只有变动时才会有这个值;
+					//输出最大投入值;
 					if(tempmc.maxTouru <an)
 					{
 						tempmc.maxTouru = an;
 					}
 					tempmc.other_txt.text = tempmc.maxTouru.toString();
+					
+					if(Number(tempmc.touru_txt.text)>Number(content.xianzhi2_txt.text)){
+						c_getorlost_txt.appendText(tempmc.name_label.text+": 投入值超过最大限制值:"+content.xianzhi2_txt.text+"("+tempmc.touru_txt.text+")" +" 期号:"+qihao+"\n");
+						return;
+					}
 				}
 			}
 		}
@@ -257,7 +281,7 @@
 			for (var j:int = 0; j < c_wanfa_mc.numChildren; j++) 
 			{
 				var tempmc:* = c_wanfa_mc.getChildAt(j);
-				if(tempmc is PeilvCls)
+				if(tempmc is peilvcls)
 				{
 //					trace((tempmc.gailv).toString());
 					tempmc.gailv_txt.text = tempmc.gailv.toString();
@@ -288,7 +312,7 @@
 			for(var str:String in nodeobj.child)
 			{
 //				trace(str,nodeobj.child[str].attributes["name"]);
-				var cls:MovieClip = new PeilvCls() as MovieClip;
+				var cls:MovieClip = new peilvcls() as MovieClip;
 				cls.name = nodeobj.child[str].attributes["name"];
 				cls.winnum = 0;
 				cls.maxChanchu = 0;
@@ -322,7 +346,7 @@
 			for (var j:int = 0; j < c_wanfa_mc.numChildren; j++) 
 			{
 				var tempmc:* = c_wanfa_mc.getChildAt(j);
-				if(tempmc is PeilvCls)
+				if(tempmc is peilvcls)
 				{
 					if(!tempmc.selet_cb.selected)
 					{
@@ -353,9 +377,12 @@
 					{
 						tempmc.winnum ++;
 						tempmc.chanchu_txt.text = (Number(tempmc.chanchu_txt.text) + (temppeilv*Number(tempmc.touru_txt.text))).toString();
+						
+						isLastWin = true;
 					}else
 					{
 						tempmc.chanchu_txt.text = (Number(tempmc.chanchu_txt.text) -  Number(tempmc.touru_txt.text)).toString();
+						isLastWin = false;
 					}
 					tempmc.winnum_txt.text = tempmc.winnum.toString();
 					if(tempmc.maxChanchu<Number(tempmc.chanchu_txt.text))
@@ -366,7 +393,7 @@
 //					trace(tempmc.name_label.text,tempmc.touru_txt.text,arr[tempmc.name]);
 				}
 				c_shuying_txt.text = (Number(c_shuying_txt.text)+Number(tempmc.chanchu_txt.text)).toString();
-				tempstr += tempmc.name + ":("+tempmc.touru_txt.text+")"+tempmc.chanchu_txt.text+";";
+				tempstr += tempmc.name + ":("+Number(tempmc.touru_txt.text).toFixed(2)+")"+Number(tempmc.chanchu_txt.text).toFixed(2)+";";
 			}
 			tempstr += "\n";
 			tempstr += "/*======分割线=======*/";
